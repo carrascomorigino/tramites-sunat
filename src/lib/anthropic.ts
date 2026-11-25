@@ -39,6 +39,8 @@ export function buildRequest(question: string, hits: Hit[]) {
   return {
     model: MODEL,
     max_tokens: MAX_TOKENS,
+    // Haiku 5.5 may add hidden "thinking" text that eats the output budget and cuts the answer.
+    thinking: { type: 'disabled' as const },
     system: SYSTEM_PROMPT,
     messages: [
       {
