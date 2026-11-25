@@ -55,7 +55,6 @@ export function SiteHeader() {
           <a href="https://mapagino.com" aria-label="Mapagino, ir a mapagino.com">
             <img src={logo} alt="Mapagino" className="site-logo" width={2301} height={705} />
           </a>
-          <a className="site-tag" href="https://demos.mapagino.com/" aria-label="Demos: ver todas las demos">Demos</a>
         </div>
         <div className="header-actions">
           <ThemeToggle />
