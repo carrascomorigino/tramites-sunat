@@ -60,4 +60,4 @@ Otros: `npm run snapshot` (vuelve a descargar las fuentes), `npm run check-live`
 
 Texto de páginas públicas del Estado peruano (gob.pe, SUNAT). Cada fuente guarda su URL y la fecha de revisión, y cada respuesta enlaza a la página original. El texto pertenece a su fuente. Código: MIT.
 
-Hecho por [Mapagino](https://mapagino.com).
+Hecho por [Mapagino](https://mapagino.com/services).
