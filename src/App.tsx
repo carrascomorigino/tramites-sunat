@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import type MiniSearch from 'minisearch';
 import samplesJson from '../samples/answers.json';
 import sourcesJson from '../corpus/sources.json';
@@ -6,6 +6,7 @@ import thresholdJson from '../evals/threshold.json';
 import { loadIndex, search, type Hit, type IndexedChunk, type SearchResult } from './lib/search.ts';
 import { askClaude, MODEL, type ClaudeAnswer } from './lib/anthropic.ts';
 import type { SampleAnswer, SourceEntry } from './lib/types.ts';
+import { SiteFooter, SiteHeader } from './shell/Shell.tsx';
 
 const samples = samplesJson as SampleAnswer[];
 const sources = sourcesJson as SourceEntry[];
@@ -39,8 +40,8 @@ function SourceCard({ n, sourceId, quote }: { n: number; sourceId: string; quote
 
 function NoSe() {
   return (
-    <div className="card nose" role="status">
-      <h2>No sé.</h2>
+    <div className="card result nose">
+      <h2 className="result-title" tabIndex={-1}>No sé.</h2>
       <p>
         No encontré esto en las fuentes oficiales de esta demo. Revisa la orientación de SUNAT:{' '}
         <a href={HELP_URL} target="_blank" rel="noopener noreferrer">orientacion.sunat.gob.pe</a>
@@ -51,9 +52,9 @@ function NoSe() {
 
 function SampleView({ s }: { s: SampleAnswer }) {
   return (
-    <div className="card">
-      <p className="label">Respuesta preparada y verificada contra la fuente</p>
-      <h2>{s.q}</h2>
+    <div className="card result">
+      <p className="eyebrow">Respuesta preparada y verificada contra la fuente</p>
+      <h2 className="result-title" tabIndex={-1}>{s.q}</h2>
       {s.parts.map((p, i) => (
         <p key={i}>
           {p.text} <span className="cites">{p.cite.map((c) => `[${c + 1}]`).join('')}</span>
@@ -68,9 +69,9 @@ function SampleView({ s }: { s: SampleAnswer }) {
 
 function HitsView({ q, hits }: { q: string; hits: Hit[] }) {
   return (
-    <div className="card">
-      <p className="label">Búsqueda sin IA: fragmentos de fuentes oficiales</p>
-      <h2>{q}</h2>
+    <div className="card result">
+      <p className="eyebrow">Búsqueda sin IA: fragmentos de fuentes oficiales</p>
+      <h2 className="result-title" tabIndex={-1}>{q}</h2>
       <ol className="sources">
         {hits.slice(0, 3).map((h, i) => (
           <SourceCard key={h.chunk.id} n={i + 1} sourceId={h.chunk.sourceId} quote={h.chunk.text} />
@@ -84,9 +85,9 @@ function HitsView({ q, hits }: { q: string; hits: Hit[] }) {
 function ClaudeView({ q, hits, ans }: { q: string; hits: Hit[]; ans: ClaudeAnswer }) {
   const used = [...new Set(ans.parts.flatMap((p) => p.citations.map((c) => c.documentIndex)))];
   return (
-    <div className="card">
-      <p className="label">Respuesta de Claude con citas ({MODEL})</p>
-      <h2>{q}</h2>
+    <div className="card result">
+      <p className="eyebrow">Respuesta de Claude con citas ({MODEL})</p>
+      <h2 className="result-title" tabIndex={-1}>{q}</h2>
       <p>
         {ans.parts.map((p, i) => (
           <span key={i}>
@@ -156,6 +157,7 @@ export function App() {
     const question = q.trim();
     if (!question || !index) return;
     const r = search(index, question, threshold);
+    focusResult.current = true;
     // The "No sé" gate runs before any AI call, in both modes.
     if (r.answer === 'no-se' || !key) {
       setView({ kind: 'search', q: question, r });
@@ -171,65 +173,111 @@ export function App() {
     }
   }
 
+  // After a result the visitor asked for (form or sample chip), move focus to its title. On a phone the
+  // result is below the chips, so this also scrolls it into view. A chip click moves focus on purpose.
+  // No aria-live on the results: the focus move already makes screen readers read the title.
+  const resultRef = useRef<HTMLElement>(null);
+  const focusResult = useRef(false);
+  useEffect(() => {
+    if (!focusResult.current || view.kind === 'none' || view.kind === 'loading') return;
+    focusResult.current = false;
+    resultRef.current?.querySelector<HTMLElement>('.result-title')?.focus();
+  }, [view]);
+
+  const activeSample = view.kind === 'sample' ? view.s.id : null;
+
   return (
-    <main>
-      <header>
-        <h1>Trámites SUNAT para independientes</h1>
-        <p className="sub">Pregunta en español. Siempre con la fuente oficial. Si no sabe, dice “No sé”.</p>
-        <p className="banner" role="note">
-          Demo. No es un servicio oficial de SUNAT. No es asesoría tributaria. Las reglas cambian: verifica siempre en la fuente oficial.
-          No escribas tu DNI ni tu RUC.
-        </p>
-      </header>
+    <>
+      <SiteHeader />
+      <main id="contenido" className="page">
+        <header className="intro">
+          <p className="eyebrow">Demo de IA · Búsqueda en documentos (RAG)</p>
+          <h1 className="display demo-title">Trámites SUNAT para independientes</h1>
+          <p className="lead">Pregunta en español. Siempre con la fuente oficial. Si no sabe, dice “No sé”.</p>
+          <p className="note banner" role="note">
+            Demo. No es un servicio oficial de SUNAT. No es asesoría tributaria. Las reglas cambian: verifica siempre en la fuente oficial.
+            No escribas tu DNI ni tu RUC.
+          </p>
+        </header>
 
-      <form onSubmit={onAsk} className="ask">
-        <label htmlFor="q" className="sr">Tu pregunta</label>
-        <input id="q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ej.: ¿Cómo emito un recibo por honorarios?" autoComplete="off" />
-        <button type="submit" disabled={!index || !q.trim()}>Preguntar</button>
-      </form>
+        <form onSubmit={onAsk} className="ask" role="search">
+          <label htmlFor="q" className="visually-hidden">Tu pregunta</label>
+          <input id="q" className="field" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ej.: ¿Cómo emito un recibo por honorarios?" autoComplete="off" />
+          <button type="submit" className="button button-primary" disabled={!index || !q.trim()}>Preguntar</button>
+        </form>
 
-      <section aria-label="Preguntas de ejemplo" className="chips">
-        {sampleChips.map((c) => (
-          <button key={c.id} type="button" className="chip" onClick={() => setView({ kind: 'sample', s: samples.find((s) => s.id === c.id)! })}>
-            {c.q}
-          </button>
-        ))}
-      </section>
+        <section aria-labelledby="chips-title" className="samples">
+          <h2 id="chips-title" className="eyebrow">Preguntas de ejemplo (sin clave)</h2>
+          <div className="chips">
+            {sampleChips.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                className="chip"
+                aria-pressed={activeSample === c.id}
+                onClick={() => {
+                  focusResult.current = true;
+                  setView({ kind: 'sample', s: samples.find((s) => s.id === c.id)! });
+                }}
+              >
+                {c.q}
+              </button>
+            ))}
+          </div>
+        </section>
 
-      <section aria-live="polite">
-        {view.kind === 'sample' && <SampleView s={view.s} />}
-        {view.kind === 'search' && (view.r.answer === 'no-se' ? <NoSe /> : <HitsView q={view.q} hits={view.r.hits} />)}
-        {view.kind === 'claude' && <ClaudeView q={view.q} hits={view.hits} ans={view.ans} />}
-        {view.kind === 'loading' && <div className="card"><p>Preguntando a Claude…</p></div>}
-        {view.kind === 'error' && <div className="card nose"><p>{view.msg}</p></div>}
-      </section>
+        <section aria-label="Respuesta" ref={resultRef} className="results">
+          {view.kind === 'none' && (
+            <p className="empty">Elige una pregunta de ejemplo o escribe la tuya. La búsqueda funciona gratis, sin clave.</p>
+          )}
+          {view.kind === 'sample' && <SampleView s={view.s} />}
+          {view.kind === 'search' && (view.r.answer === 'no-se' ? <NoSe /> : <HitsView q={view.q} hits={view.r.hits} />)}
+          {view.kind === 'claude' && <ClaudeView q={view.q} hits={view.hits} ans={view.ans} />}
+          {view.kind === 'loading' && <div className="card result"><p role="status">Preguntando a Claude…</p></div>}
+          {view.kind === 'error' && (
+            <div className="card result nose">
+              <p className="result-title" tabIndex={-1}>{view.msg}</p>
+            </div>
+          )}
+        </section>
 
-      <details className="key">
-        <summary>{key ? 'Tu clave de Anthropic está activa' : 'Opcional: usa tu propia clave de Anthropic'}</summary>
-        <p>
-          Con tu clave, Claude redacta la respuesta y cita las fuentes. Sin clave, la búsqueda sigue funcionando gratis.
-          Tu clave, tu costo. No la compartas. La clave queda en tu navegador y solo se envía a api.anthropic.com.
-        </p>
-        <p className="hint">No necesitas clave para probar la demo. Si quieres usar una, hazlo seguro:</p>
-        <ul className="hint">
-          <li>Crea una clave nueva en un workspace aparte de Anthropic, con un límite de gasto bajo (ej.: USD 1). Bórrala después de probar.</li>
-          <li>
-            Revisa el código que envía la clave:{' '}
-            <a href="https://github.com/carrascomorigino/tramites-peru-rag/blob/main/src/lib/anthropic.ts" target="_blank" rel="noopener noreferrer">src/lib/anthropic.ts</a>.
-          </li>
-          <li>Abre la pestaña Red (Network) de tu navegador: verás llamadas solo a api.anthropic.com.</li>
-        </ul>
-        <label htmlFor="key" className="sr">Clave de API de Anthropic</label>
-        <input id="key" type="password" value={key} onChange={(e) => setKey(e.target.value.trim())} placeholder="Clave de API" autoComplete="off" spellCheck={false} />
-        <label className="check">
-          <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Recordar en esta pestaña
-        </label>
-        {key && <button type="button" onClick={() => setKey('')}>Borrar clave</button>}
-      </details>
+        <details className="card key">
+          <summary>{key ? 'Tu clave de Anthropic está activa' : 'Opcional: usa tu propia clave de Anthropic'}</summary>
+          <p>
+            Con tu clave, Claude redacta la respuesta y cita las fuentes. Sin clave, la búsqueda sigue funcionando gratis.
+            Tu clave, tu costo. No la compartas. La clave queda en tu navegador y solo se envía a api.anthropic.com.
+          </p>
+          <p className="hint">No necesitas clave para probar la demo. Si quieres usar una, hazlo seguro:</p>
+          <ul className="hint">
+            <li>Crea una clave nueva en un workspace aparte de Anthropic, con un límite de gasto bajo (ej.: USD 1). Bórrala después de probar.</li>
+            <li>
+              Revisa el código que envía la clave:{' '}
+              <a href="https://github.com/carrascomorigino/tramites-sunat/blob/main/src/lib/anthropic.ts" target="_blank" rel="noopener noreferrer">src/lib/anthropic.ts</a>.
+            </li>
+            <li>Abre la pestaña Red (Network) de tu navegador: verás llamadas solo a api.anthropic.com.</li>
+          </ul>
+          <label htmlFor="key" className="visually-hidden">Clave de API de Anthropic</label>
+          <input id="key" className="field" type="password" value={key} onChange={(e) => setKey(e.target.value.trim())} placeholder="Clave de API" autoComplete="off" spellCheck={false} />
+          <label className="check">
+            <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Recordar en esta pestaña
+          </label>
+          {key && <button type="button" className="button button-secondary" onClick={() => setKey('')}>Borrar clave</button>}
+        </details>
+      </main>
 
-      <footer>
-        <p>Fuentes: {sources.length} páginas de gob.pe y SUNAT. Código abierto (MIT). Hecho por <a href="https://mapagino.com" target="_blank" rel="noopener noreferrer">Mapagino</a>.</p>
-      </footer>
-    </main>
+      <SiteFooter>
+        <div className="footer-group">
+          <h2 className="footer-title">Esta demo</h2>
+          <p>Fuentes: {sources.length} páginas de gob.pe y SUNAT. Código abierto (MIT). Hecho por <a href="https://mapagino.com" target="_blank" rel="noopener noreferrer">Mapagino</a>.</p>
+        </div>
+        <div className="footer-group">
+          <h2 className="footer-title">Más</h2>
+          <ul>
+            <li><a href="https://demos.mapagino.com/">Todas las demos</a></li>
+            <li><a href="https://github.com/carrascomorigino/tramites-sunat" target="_blank" rel="noopener noreferrer">Código en GitHub</a></li>
+          </ul>
+        </div>
+      </SiteFooter>
+    </>
   );
 }

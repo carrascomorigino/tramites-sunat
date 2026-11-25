@@ -1,0 +1,187 @@
+/*
+ * Mapagino design tokens for demos.mapagino.com (shell v1, 2026-11-25).
+ * Copied from mapagino.com tokens.css, which mirrors the Mapagino design system.
+ * Copy values from there; do not invent brand colors here.
+ * Store-badge and video parts are left out (not used by the demos).
+ */
+
+@font-face {
+  font-family: "Anton";
+  src: url("fonts/anton-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("fonts/roboto-variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light dark;
+
+  /* Brand palette (manual de marca 2025, WEB values) */
+  --borgona: #730c35;
+  --celeste: #41b7cb;
+  --amarillo: #f0da32;
+  --crema: #f8f7db;
+  --hielo: #e5f2f5;
+  --carbon: #25272c;
+
+  /* Semantic colors, light theme */
+  --surface: var(--crema);
+  --surface-raised: #ffffff;
+  --surface-tint: var(--hielo);
+  --ink: var(--carbon);
+  --ink-muted: #4b4e55;
+  --primary: var(--borgona);
+  --on-primary: var(--crema);
+  --link: #0b6575;
+  --border-strong: #6f7279;
+  --border-soft: rgba(37, 39, 44, 0.12);
+  --focus-ring: var(--borgona);
+  --hero-veil: rgba(248, 247, 219, 0.45); /* veil over the hero video */
+
+  /* Type */
+  --font-display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --font-sans: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Radius */
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  --shadow-card: 0 1px 2px rgba(37, 39, 44, 0.06),
+    0 8px 24px rgba(37, 39, 44, 0.08);
+}
+
+/*
+ * Dark theme. It follows the system unless the visitor picks a theme with the
+ * header button (theme.js sets <html data-theme="light|dark">). Keep the two
+ * dark blocks below identical.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --surface: var(--carbon);
+    --surface-raised: #31343a;
+    --surface-tint: #2c4a51;
+    --ink: var(--crema);
+    --ink-muted: #cfcdb4;
+    --primary: var(--celeste);
+    --on-primary: var(--carbon);
+    --link: var(--celeste);
+    --border-strong: #9a9da3;
+    --border-soft: rgba(248, 247, 219, 0.14);
+    --focus-ring: var(--amarillo);
+    --hero-veil: rgba(37, 39, 44, 0.78);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: var(--carbon);
+  --surface-raised: #31343a;
+  --surface-tint: #2c4a51;
+  --ink: var(--crema);
+  --ink-muted: #cfcdb4;
+  --primary: var(--celeste);
+  --on-primary: var(--carbon);
+  --link: var(--celeste);
+  --border-strong: #9a9da3;
+  --border-soft: rgba(248, 247, 219, 0.14);
+  --focus-ring: var(--amarillo);
+  --hero-veil: rgba(37, 39, 44, 0.78);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* Shared base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* The sticky header must never cover a focused element or an anchor target */
+  scroll-padding-top: 96px;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  background-color: var(--surface);
+  color: var(--ink);
+}
+
+a {
+  color: var(--link);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Brand header: always a crema band, because the logo ink is carbon */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: rgba(248, 247, 219, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(37, 39, 44, 0.12);
+  color-scheme: light;
+}
+
+.site-header-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.site-logo {
+  display: block;
+  width: 180px;
+  height: auto;
+}
+
