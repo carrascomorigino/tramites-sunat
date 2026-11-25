@@ -268,7 +268,7 @@ export function App() {
       <SiteFooter>
         <div className="footer-group">
           <h2 className="footer-title">Esta demo</h2>
-          <p>Fuentes: {sources.length} páginas de gob.pe y SUNAT. Código abierto (MIT). Hecho por <a href="https://mapagino.com" target="_blank" rel="noopener noreferrer">Mapagino</a>.</p>
+          <p>Fuentes: {sources.length} páginas de gob.pe y SUNAT. Código abierto (MIT). Hecho por <a href="https://mapagino.com/services" target="_blank" rel="noopener noreferrer">Mapagino</a>.</p>
         </div>
         <div className="footer-group">
           <h2 className="footer-title">Más</h2>
