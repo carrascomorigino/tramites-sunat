@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { API_URL, MODEL, SYSTEM_PROMPT, askClaude, buildRequest } from '../src/lib/anthropic.ts';
+import { API_URL, MAX_TOKENS, MODEL, SYSTEM_PROMPT, askClaude, buildRequest } from '../src/lib/anthropic.ts';
 import type { Hit } from '../src/lib/search.ts';
 
 const hits: Hit[] = [
@@ -31,7 +31,7 @@ describe('Mode B request (mock fetch, no real call)', () => {
     const body = JSON.parse(init.body as string);
     expect(body).toEqual(buildRequest('¿Qué necesito?', hits));
     expect(body.model).toBe(MODEL);
-    expect(body.max_tokens).toBe(600);
+    expect(body.max_tokens).toBe(MAX_TOKENS);
     expect(body.system).toBe(SYSTEM_PROMPT);
     expect(body.messages[0].content[0]).toMatchObject({ type: 'document', citations: { enabled: true }, source: { type: 'text', data: 'Clave SOL.' } });
     expect(body.messages[0].content.at(-1)).toEqual({ type: 'text', text: '¿Qué necesito?' });
