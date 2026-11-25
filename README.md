@@ -4,6 +4,10 @@ Chat en español sobre trámites SUNAT para trabajadores independientes. Siempre
 
 > **Demo.** No es un servicio oficial de SUNAT. No es asesoría tributaria. Las reglas cambian: verifica siempre en la fuente oficial.
 
+![Demo: pregunta de ejemplo, búsqueda libre y "No sé"](docs/demo.gif)
+
+[Ver el video (MP4 con voz, 32 s)](docs/demo.mp4)
+
 ## Pruébalo en 2 minutos, sin clave
 
 1. Haz clic en una pregunta de ejemplo → ves la respuesta, la cita exacta, el enlace oficial y la fecha de revisión.
