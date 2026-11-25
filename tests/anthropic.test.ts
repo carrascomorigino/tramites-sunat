@@ -32,6 +32,7 @@ describe('Mode B request (mock fetch, no real call)', () => {
     expect(body).toEqual(buildRequest('¿Qué necesito?', hits));
     expect(body.model).toBe(MODEL);
     expect(body.max_tokens).toBe(MAX_TOKENS);
+    expect(body.thinking).toEqual({ type: 'disabled' });
     expect(body.system).toBe(SYSTEM_PROMPT);
     expect(body.messages[0].content[0]).toMatchObject({ type: 'document', citations: { enabled: true }, source: { type: 'text', data: 'Clave SOL.' } });
     expect(body.messages[0].content.at(-1)).toEqual({ type: 'text', text: '¿Qué necesito?' });
