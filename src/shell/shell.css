@@ -36,31 +36,7 @@ html {
 }
 
 .site-brand .site-logo {
-  width: 150px;
-}
-
-.site-tag {
-  font-family: var(--font-display);
-  font-size: 18px;
-  line-height: 1;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--carbon);
-  text-decoration: none;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(37, 39, 44, 0.24);
-}
-
-a.site-tag {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-}
-
-a.site-tag:hover {
-  background-color: rgba(115, 12, 53, 0.1);
-  color: var(--borgona);
+  width: 180px; /* same as mapagino.com tokens.css */
 }
 
 .header-actions {
@@ -116,13 +92,15 @@ a.site-tag:hover {
   display: block;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 768px) {
   .site-brand .site-logo {
-    width: 120px;
+    width: 148px;
   }
-  .site-tag {
-    font-size: 16px;
-    padding: var(--space-1) var(--space-2);
+}
+
+@media (max-width: 420px) {
+  .site-brand .site-logo {
+    width: 124px;
   }
 }
 
